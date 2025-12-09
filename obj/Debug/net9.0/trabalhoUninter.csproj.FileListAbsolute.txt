@@ -34,3 +34,4 @@ C:\Users\Breno\Downloads\trabalhoUninter\trabalhoUninter\obj\Debug\net9.0\refint
 C:\Users\Breno\Downloads\trabalhoUninter\trabalhoUninter\obj\Debug\net9.0\trabalhoUninter.pdb
 C:\Users\Breno\Downloads\trabalhoUninter\trabalhoUninter\obj\Debug\net9.0\trabalhoUninter.genruntimeconfig.cache
 C:\Users\Breno\Downloads\trabalhoUninter\trabalhoUninter\obj\Debug\net9.0\ref\trabalhoUninter.dll
+C:\Users\Breno\Downloads\trabalhoUninter\trabalhoUninter\obj\Debug\net9.0\trabalhoUninter.sourcelink.json

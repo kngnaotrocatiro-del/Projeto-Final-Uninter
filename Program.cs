@@ -84,7 +84,7 @@ app.Use(async (context, next) =>
             catch { }
         }
         context.Response.StatusCode = 401;
-        await context.Response.WriteAsync("Não autorizado. Use seu sobrenome e RU.");
+        await context.Response.WriteAsync("Usuário não autenticado. Contate o administrador.");
         return;
     }
     await next();
@@ -182,6 +182,12 @@ app.MapDelete("/pacientes/{id:int}", async (int id, AppDbContext db) =>
 .WithName("DeletePaciente");
 
 // ======== ENDPOINT DE HISTÓRICO ========
+// Retorna todo o histórico de todos os pacientes
+app.MapGet("/pacientes/historico", async (AppDbContext db) =>
+    await db.PacienteHistoricos.ToListAsync())
+.WithName("GetAllPacienteHistorico");
+
+// Retorna o histórico de um paciente específico pelo id
 app.MapGet("/pacientes/{id:int}/historico", async (int id, AppDbContext db) =>
     await db.PacienteHistoricos.Where(h => h.PacienteId == id).ToListAsync())
 .WithName("GetPacienteHistorico");
