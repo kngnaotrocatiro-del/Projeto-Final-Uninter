@@ -1,8 +1,7 @@
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using trabalhoUninter.Data;
-using trabalhoUninter.Models;
+using trabalhoUninter.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +12,7 @@ builder.Services.AddDbContext<AppDbContext>(opt => opt.UseInMemoryDatabase("Paci
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API Pacientes", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "API SGHSS - Sistema de Gestão Hospitalar", Version = "v1" });
     c.AddSecurityDefinition("basic", new OpenApiSecurityScheme
     {
         Name = "Authorization",
@@ -53,143 +52,56 @@ if (app.Environment.IsDevelopment())
 // Redireciona raiz para /swagger
 app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
-app.UseHttpsRedirection();
-
-
 const string SOBRENOME = "Mancini";
 const string RU = "4576701";
 
-
+// Middleware de autenticação para endpoints protegidos
 app.Use(async (context, next) =>
 {
-    if (context.Request.Path.StartsWithSegments("/pacientes"))
+    var path = context.Request.Path.Value ?? "";
+    
+    // Endpoints protegidos
+    var protectedPaths = new[] { "/pacientes", "/profissionais", "/medicos", "/unidades-saude", "/hospitais", "/consultas", "/exames", "/prescricoes", "/prontuarios", "/telemedicina" };
+    
+    if (protectedPaths.Any(p => path.StartsWith(p)))
     {
-        var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
-        if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
+        if (!IsAuthenticated(context, SOBRENOME, RU))
         {
-            try
-            {
-                var encoded = authHeader["Basic ".Length..].Trim();
-                var decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
-                var parts = decoded.Split(':', 2);
-                var username = parts.ElementAtOrDefault(0);
-                var password = parts.ElementAtOrDefault(1);
-
-                if (username == SOBRENOME && password == RU)
-                {
-                    await next();
-                    return;
-                }
-            }
-            catch { }
+            context.Response.StatusCode = 401;
+            await context.Response.WriteAsync("Usuário não autenticado. Contate o administrador.");
+            return;
         }
-        context.Response.StatusCode = 401;
-        await context.Response.WriteAsync("Usuário não autenticado. Contate o administrador.");
-        return;
     }
     await next();
 });
 
-
-// ======== ENDPOINTS DE PACIENTES (CRUD COM HISTÓRICO) ========
-app.MapGet("/pacientes", async (AppDbContext db) => await db.Pacientes.ToListAsync())
-.WithName("GetPacientes");
-
-app.MapGet("/pacientes/{id:int}", async (int id, AppDbContext db) =>
-    await db.Pacientes.FindAsync(id) is Paciente p ? Results.Ok(p) : Results.NotFound())
-.WithName("GetPacienteById");
-
-app.MapPost("/pacientes", async (Paciente paciente, AppDbContext db) =>
-{
-    if (paciente.Id == 0)
-    {
-        var nextId = (await db.Pacientes.AnyAsync()) ? await db.Pacientes.MaxAsync(x => x.Id) + 1 : 1;
-        paciente.Id = nextId;
-    }
-    
-    db.Pacientes.Add(paciente);
-    await db.SaveChangesAsync();
-    
-    // Registra no histórico
-    var historico = new PacienteHistorico
-    {
-        PacienteId = paciente.Id,
-        CPF = paciente.CPF,
-        Nome = paciente.Nome,
-        PlanoDeSaude = paciente.PlanoDeSaude,
-        Timestamp = DateTime.Now,
-        Usuario = SOBRENOME,
-        Acao = "INCLUSÃO"
-    };
-    db.PacienteHistoricos.Add(historico);
-    await db.SaveChangesAsync();
-    
-    return Results.Created($"/pacientes/{paciente.Id}", paciente);
-})
-.WithName("CreatePaciente");
-
-app.MapPut("/pacientes/{id:int}", async (int id, Paciente dados, AppDbContext db) =>
-{
-    var paciente = await db.Pacientes.FindAsync(id);
-    if (paciente is null) return Results.NotFound();
-    
-    paciente.CPF = dados.CPF;
-    paciente.Nome = dados.Nome;
-    paciente.PlanoDeSaude = dados.PlanoDeSaude;
-    await db.SaveChangesAsync();
-    
-    // Registra no histórico
-    var historico = new PacienteHistorico
-    {
-        PacienteId = paciente.Id,
-        CPF = paciente.CPF,
-        Nome = paciente.Nome,
-        PlanoDeSaude = paciente.PlanoDeSaude,
-        Timestamp = DateTime.Now,
-        Usuario = SOBRENOME,
-        Acao = "ALTERAÇÃO"
-    };
-    db.PacienteHistoricos.Add(historico);
-    await db.SaveChangesAsync();
-    
-    return Results.Ok(paciente);
-})
-.WithName("UpdatePaciente");
-
-app.MapDelete("/pacientes/{id:int}", async (int id, AppDbContext db) =>
-{
-    var paciente = await db.Pacientes.FindAsync(id);
-    if (paciente is null) return Results.NotFound();
-    
-    // Registra no histórico antes de deletar
-    var historico = new PacienteHistorico
-    {
-        PacienteId = paciente.Id,
-        CPF = paciente.CPF,
-        Nome = paciente.Nome,
-        PlanoDeSaude = paciente.PlanoDeSaude,
-        Timestamp = DateTime.Now,
-        Usuario = SOBRENOME,
-        Acao = "EXCLUSÃO"
-    };
-    db.PacienteHistoricos.Add(historico);
-    
-    db.Pacientes.Remove(paciente);
-    await db.SaveChangesAsync();
-    
-    return Results.NoContent();
-})
-.WithName("DeletePaciente");
-
-// ======== ENDPOINT DE HISTÓRICO ========
-// Retorna todo o histórico de todos os pacientes
-app.MapGet("/pacientes/historico", async (AppDbContext db) =>
-    await db.PacienteHistoricos.ToListAsync())
-.WithName("GetAllPacienteHistorico");
-
-// Retorna o histórico de um paciente específico pelo id
-app.MapGet("/pacientes/{id:int}/historico", async (int id, AppDbContext db) =>
-    await db.PacienteHistoricos.Where(h => h.PacienteId == id).ToListAsync())
-.WithName("GetPacienteHistorico");
+// Registrar todos os endpoints através das extensões
+app.MapPacienteEndpoints(SOBRENOME);
+app.MapProfissionalEndpoints(SOBRENOME);
+app.MapMedicoEndpoints(SOBRENOME);
+app.MapUnidadeSaudeEndpoints(SOBRENOME);
+app.MapConsultaExameEndpoints(SOBRENOME);
+app.MapProntuarioTelemedinaSessaoEndpoints(SOBRENOME);
 
 app.Run();
+
+// Função auxiliar para validação de autenticação
+static bool IsAuthenticated(HttpContext context, string expectedUser, string expectedPassword)
+{
+    var authHeader = context.Request.Headers["Authorization"].FirstOrDefault();
+    if (!string.IsNullOrWhiteSpace(authHeader) && authHeader.StartsWith("Basic ", StringComparison.OrdinalIgnoreCase))
+    {
+        try
+        {
+            var encoded = authHeader["Basic ".Length..].Trim();
+            var decoded = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(encoded));
+            var parts = decoded.Split(':', 2);
+            var username = parts.ElementAtOrDefault(0);
+            var password = parts.ElementAtOrDefault(1);
+
+            return username == expectedUser && password == expectedPassword;
+        }
+        catch { }
+    }
+    return false;
+}
