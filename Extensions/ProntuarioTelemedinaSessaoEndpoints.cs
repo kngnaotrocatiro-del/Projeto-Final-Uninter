@@ -15,7 +15,6 @@ namespace trabalhoUninter.Extensions
             app.MapPost("/prontuarios", CreateProntuario).WithName("CreateProntuario");
             app.MapPut("/prontuarios/{id:int}", UpdateProntuario).WithName("UpdateProntuario");
             app.MapDelete("/prontuarios/{id:int}", DeleteProntuario).WithName("DeleteProntuario");
-            app.MapGet("/prontuarios/{id:int}/historico", GetProntuarioHistorico).WithName("GetProntuarioHistorico");
 
             // ======== ENDPOINTS DE TELEMEDICINA (CRUD COM HISTÓRICO) ========
             app.MapGet("/telemedicina", GetTelemedinaSessoes).WithName("GetTelemedinaSessoes");
@@ -23,7 +22,6 @@ namespace trabalhoUninter.Extensions
             app.MapPost("/telemedicina", CreateTelemedinaSessao).WithName("CreateTelemedinaSessao");
             app.MapPut("/telemedicina/{id:int}", UpdateTelemedinaSessao).WithName("UpdateTelemedinaSessao");
             app.MapDelete("/telemedicina/{id:int}", DeleteTelemedinaSessao).WithName("DeleteTelemedinaSessao");
-            app.MapGet("/telemedicina/{id:int}/historico", GetTelemedinaSessaoHistorico).WithName("GetTelemedinaSessaoHistorico");
         }
 
         // ===== PRONTUÁRIOS =====
@@ -97,8 +95,7 @@ namespace trabalhoUninter.Extensions
             return Results.NoContent();
         }
 
-        private static async Task<IResult> GetProntuarioHistorico(int id, AppDbContext db) =>
-            Results.Ok(await db.ProntuarioHistoricos.Where(h => h.ProntuarioId == id).ToListAsync());
+
 
         // ===== TELEMEDICINA SESSÕES =====
         private static async Task<IResult> GetTelemedinaSessoes(AppDbContext db) => Results.Ok(await db.TelemedinaSessoes.ToListAsync());
@@ -171,7 +168,6 @@ namespace trabalhoUninter.Extensions
             return Results.NoContent();
         }
 
-        private static async Task<IResult> GetTelemedinaSessaoHistorico(int id, AppDbContext db) =>
-            Results.Ok(await db.TelemedinaSessaoHistoricos.Where(h => h.TelemedinaSessaoId == id).ToListAsync());
+
     }
 }

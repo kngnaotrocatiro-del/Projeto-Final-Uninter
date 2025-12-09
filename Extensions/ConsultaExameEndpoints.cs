@@ -15,7 +15,6 @@ namespace trabalhoUninter.Extensions
             app.MapPost("/consultas", CreateConsulta).WithName("CreateConsulta");
             app.MapPut("/consultas/{id:int}", UpdateConsulta).WithName("UpdateConsulta");
             app.MapDelete("/consultas/{id:int}", DeleteConsulta).WithName("DeleteConsulta");
-            app.MapGet("/consultas/{id:int}/historico", GetConsultaHistorico).WithName("GetConsultaHistorico");
 
             // ======== ENDPOINTS DE EXAMES (CRUD COM HISTÓRICO) ========
             app.MapGet("/exames", GetExames).WithName("GetExames");
@@ -23,7 +22,6 @@ namespace trabalhoUninter.Extensions
             app.MapPost("/exames", CreateExame).WithName("CreateExame");
             app.MapPut("/exames/{id:int}", UpdateExame).WithName("UpdateExame");
             app.MapDelete("/exames/{id:int}", DeleteExame).WithName("DeleteExame");
-            app.MapGet("/exames/{id:int}/historico", GetExameHistorico).WithName("GetExameHistorico");
 
             // ======== ENDPOINTS DE PRESCRIÇÕES (CRUD COM HISTÓRICO) ========
             app.MapGet("/prescricoes", GetPrescricoes).WithName("GetPrescricoes");
@@ -31,7 +29,6 @@ namespace trabalhoUninter.Extensions
             app.MapPost("/prescricoes", CreatePrescricao).WithName("CreatePrescricao");
             app.MapPut("/prescricoes/{id:int}", UpdatePrescricao).WithName("UpdatePrescricao");
             app.MapDelete("/prescricoes/{id:int}", DeletePrescricao).WithName("DeletePrescricao");
-            app.MapGet("/prescricoes/{id:int}/historico", GetPrescricaoHistorico).WithName("GetPrescricaoHistorico");
         }
 
         // ===== CONSULTAS =====
@@ -109,8 +106,7 @@ namespace trabalhoUninter.Extensions
             return Results.NoContent();
         }
 
-        private static async Task<IResult> GetConsultaHistorico(int id, AppDbContext db) =>
-            Results.Ok(await db.ConsultaHistoricos.Where(h => h.ConsultaId == id).ToListAsync());
+
 
         // ===== EXAMES =====
         private static async Task<IResult> GetExames(AppDbContext db) => Results.Ok(await db.Exames.ToListAsync());
@@ -187,8 +183,7 @@ namespace trabalhoUninter.Extensions
             return Results.NoContent();
         }
 
-        private static async Task<IResult> GetExameHistorico(int id, AppDbContext db) =>
-            Results.Ok(await db.ExameHistoricos.Where(h => h.ExameId == id).ToListAsync());
+
 
         // ===== PRESCRIÇÕES =====
         private static async Task<IResult> GetPrescricoes(AppDbContext db) => Results.Ok(await db.Prescricoes.ToListAsync());
@@ -261,7 +256,6 @@ namespace trabalhoUninter.Extensions
             return Results.NoContent();
         }
 
-        private static async Task<IResult> GetPrescricaoHistorico(int id, AppDbContext db) =>
-            Results.Ok(await db.PrescricaoHistoricos.Where(h => h.PrescricaoId == id).ToListAsync());
+
     }
 }

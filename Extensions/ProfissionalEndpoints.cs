@@ -24,9 +24,6 @@ namespace trabalhoUninter.Extensions
 
             app.MapDelete("/profissionais/{id:int}", DeleteProfissional)
                 .WithName("DeleteProfissional");
-
-            app.MapGet("/profissionais/{id:int}/historico", GetProfissionalHistorico)
-                .WithName("GetProfissionalHistorico");
         }
 
         private static async Task<IResult> GetProfissionais(AppDbContext db)

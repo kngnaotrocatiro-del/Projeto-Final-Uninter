@@ -61,7 +61,7 @@ app.Use(async (context, next) =>
     var path = context.Request.Path.Value ?? "";
     
     // Endpoints protegidos
-    var protectedPaths = new[] { "/pacientes", "/profissionais", "/medicos", "/unidades-saude", "/hospitais", "/consultas", "/exames", "/prescricoes", "/prontuarios", "/telemedicina" };
+    var protectedPaths = new[] { "/pacientes", "/profissionais", "/medicos", "/unidades-saude", "/hospitais", "/consultas", "/exames", "/prescricoes", "/prontuarios", "/telemedicina", "/historico" };
     
     if (protectedPaths.Any(p => path.StartsWith(p)))
     {
@@ -82,6 +82,7 @@ app.MapMedicoEndpoints(SOBRENOME);
 app.MapUnidadeSaudeEndpoints(SOBRENOME);
 app.MapConsultaExameEndpoints(SOBRENOME);
 app.MapProntuarioTelemedinaSessaoEndpoints(SOBRENOME);
+app.MapHistoricoEndpoints();
 
 app.Run();
 

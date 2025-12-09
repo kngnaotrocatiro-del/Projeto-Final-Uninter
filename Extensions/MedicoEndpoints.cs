@@ -24,9 +24,6 @@ namespace trabalhoUninter.Extensions
 
             app.MapDelete("/medicos/{id:int}", DeleteMedico)
                 .WithName("DeleteMedico");
-
-            app.MapGet("/medicos/{id:int}/historico", GetMedicoHistorico)
-                .WithName("GetMedicoHistorico");
         }
 
         private static async Task<IResult> GetMedicos(AppDbContext db)
@@ -129,13 +126,6 @@ namespace trabalhoUninter.Extensions
             await db.SaveChangesAsync();
 
             return Results.NoContent();
-        }
-
-        private static async Task<IResult> GetMedicoHistorico(int id, AppDbContext db)
-        {
-            return Results.Ok(await db.MedicoHistoricos
-                .Where(h => h.MedicoId == id)
-                .ToListAsync());
         }
     }
 }

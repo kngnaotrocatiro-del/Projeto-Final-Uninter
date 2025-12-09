@@ -25,9 +25,6 @@ namespace trabalhoUninter.Extensions
             app.MapDelete("/unidades-saude/{id:int}", DeleteUnidadeSaude)
                 .WithName("DeleteUnidadeSaude");
 
-            app.MapGet("/unidades-saude/{id:int}/historico", GetUnidadeSaudeHistorico)
-                .WithName("GetUnidadeSaudeHistorico");
-
             // ======== ENDPOINTS DE HOSPITAIS (CRUD COM HISTÓRICO) ========
             app.MapGet("/hospitais", GetHospitais)
                 .WithName("GetHospitais");
@@ -43,9 +40,6 @@ namespace trabalhoUninter.Extensions
 
             app.MapDelete("/hospitais/{id:int}", DeleteHospital)
                 .WithName("DeleteHospital");
-
-            app.MapGet("/hospitais/{id:int}/historico", GetHospitalHistorico)
-                .WithName("GetHospitalHistorico");
         }
 
         // ===== UNIDADES DE SAÚDE =====
@@ -143,12 +137,7 @@ namespace trabalhoUninter.Extensions
             return Results.NoContent();
         }
 
-        private static async Task<IResult> GetUnidadeSaudeHistorico(int id, AppDbContext db)
-        {
-            return Results.Ok(await db.UnidadesSaudeHistorico
-                .Where(h => h.UnidadeSaudeId == id)
-                .ToListAsync());
-        }
+
 
         // ===== HOSPITAIS =====
         private static async Task<IResult> GetHospitais(AppDbContext db)
@@ -265,11 +254,6 @@ namespace trabalhoUninter.Extensions
             return Results.NoContent();
         }
 
-        private static async Task<IResult> GetHospitalHistorico(int id, AppDbContext db)
-        {
-            return Results.Ok(await db.HospitalHistoricos
-                .Where(h => h.HospitalId == id)
-                .ToListAsync());
-        }
+
     }
 }
